@@ -1,0 +1,38 @@
+name: Bright Green Contributions
+
+on:
+  schedule:
+    # Berjalan otomatis setiap hari pukul 01:00 UTC (08:00 WIB)
+    - cron: "0 1 * * *"
+  workflow_dispatch: # Tombol manual untuk mengetes langsung
+
+permissions:
+  contents: write
+
+jobs:
+  burst-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git author
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+      - name: Generate multiple daily commits
+        run: |
+          mkdir -p activity
+          # Angka acak antara 15 sampai 25 commit per hari agar terlihat alami & selalu hijau terang
+          COMMIT_COUNT=$((RANDOM % 11 + 35))
+          echo "Generating $COMMIT_COUNT commits for $(date -u '+%Y-%m-%d')..."
+
+          for i in $(seq 1 $COMMIT_COUNT); do
+            echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - pulse #$i" >> activity/log.txt
+            git add activity/log.txt
+            git commit -m "chore: daily activity #$i ($(date -u '+%Y-%m-%d'))"
+          done
+
+      - name: Push all commits
+        run: git push
